@@ -26,6 +26,7 @@ REPORT_VIEWER_ROLES = ('superadmin', 'hr', 'director_retail', 'director', 'admin
 GLOBAL_REPORT_VIEWER_ROLES = ('superadmin', 'hr', 'director_retail')
 USER_EDITOR_ROLES = ('superadmin', 'hr')
 USER_DELETER_ROLES = ('superadmin',)
+SUPER_ROLES = ('superadmin', 'hr')
 ALL_STAFF_ROLES = ('seller', 'inventory', 'cashier', 'admin_store', 'director', 'director_retail', 'hr', 'superadmin')
 
 
@@ -73,12 +74,12 @@ def store_admin_required(f):
 
 
 def superadmin_required(f):
-    """Allow access only to superadmin."""
+    """Allow access only to superadmin and HR."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))
-        if current_user.role != 'superadmin':
+        if current_user.role not in SUPER_ROLES:
             flash('Доступ запрещён', 'danger')
             return redirect(url_for('main.dashboard'))
         return f(*args, **kwargs)
