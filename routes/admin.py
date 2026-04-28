@@ -1,6 +1,9 @@
 import logging
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+import os
+import uuid
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
 from extensions import db
 from models import (
     ChatMessage,
@@ -22,6 +25,7 @@ from routes.security import (
     can_delete_user,
     can_edit_user,
     can_manage_user,
+    content_editor_required,
     superadmin_required,
     store_admin_required,
 )
@@ -29,6 +33,40 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+
+
+def allowed_file(filename):
+    return (
+        '.' in filename and
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
+
+
+@admin_bp.route('/upload-image', methods=['POST'])
+@login_required
+@content_editor_required
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify(error='No file'), 400
+
+    file = request.files['file']
+
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify(error='Invalid file'), 400
+
+    original_filename = secure_filename(file.filename)
+    ext = original_filename.rsplit('.', 1)[1].lower()
+    filename = f'{uuid.uuid4().hex}.{ext}'
+
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
+
+    url = f'/static/uploads/{filename}'
+    return jsonify(url=url)
 
 
 @admin_bp.route('/')

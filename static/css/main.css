@@ -793,3 +793,37 @@ body {
     display: none !important;
   }
 }
+
+/* === SIDEBAR PREMIUM === */
+
+.sidebar {
+  background: #111111;
+  color: #ffffff;
+  width: 260px;
+}
+
+.sidebar-logo {
+  padding: 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255,255,255,.7);
+  padding: 12px 18px;
+  border-radius: 10px;
+  transition: all .2s ease;
+}
+
+.sidebar a:hover {
+  background: rgba(255,255,255,.05);
+  color: #ffffff;
+}
+
+.sidebar a.active {
+  background: #b50f04;
+  color: #ffffff;
+  font-weight: 600;
+}

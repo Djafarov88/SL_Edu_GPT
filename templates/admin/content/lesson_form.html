@@ -48,6 +48,11 @@
         </div>
       </div>
 
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Загрузить изображение</label>
+        <input type="file" id="imageUpload" class="form-control rounded-3" accept="image/*">
+      </div>
+
       <label class="form-label fw-semibold">Содержание урока</label>
       <div id="quillEditor" class="border rounded-3">{{ lesson.content | safe if lesson and lesson.content else '' }}</div>
     </div>
@@ -83,6 +88,31 @@ const quill = new Quill('#quillEditor', {
 
 document.getElementById('lessonForm').addEventListener('submit', function(e) {
   document.getElementById('contentInput').value = quill.root.innerHTML;
+});
+
+document.getElementById('imageUpload').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('{{ url_for("admin.upload_image") }}', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    alert('Ошибка загрузки изображения');
+    e.target.value = '';
+    return;
+  }
+
+  const data = await response.json();
+  const range = quill.getSelection(true);
+  quill.insertEmbed(range.index, 'image', data.url);
+  quill.setSelection(range.index + 1);
+  e.target.value = '';
 });
 </script>
 {% endblock %}
