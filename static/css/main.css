@@ -14,7 +14,7 @@
   --orange:        #E87010;
   --orange-light:  #FFF3E6;
   --bg:            #F2F4F7;
-  --sidebar-bg:    #0D3D20;
+  --sidebar-bg:    #b50f04;
   --sidebar-width: 256px;
   --topbar-h:      56px;
   --radius-sm:     8px;
@@ -49,6 +49,7 @@ body {
 .sidebar {
   width: var(--sidebar-width);
   background: var(--sidebar-bg);
+  color: #fff;
   position: fixed;
   top: 0;
   left: 0;
@@ -56,6 +57,14 @@ body {
   overflow-y: auto;
   z-index: 100;
   flex-shrink: 0;
+}
+
+.sidebar a {
+  color: #fff;
+}
+
+.sidebar a:hover {
+  background: rgba(255,255,255,.1);
 }
 
 /* Sidebar scrollbar */
