@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ mod.title }} — Редактор{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+  <a href="{{ url_for('content.index') }}" class="btn btn-outline-secondary rounded-3 btn-sm">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div class="flex-grow-1">
+    <h4 class="fw-bold mb-0">{{ mod.title }}</h4>
+    <small class="text-muted">{{ mod.code }} · <span class="badge level-badge-{{ mod.level_required }}">{{ mod.level_label }}</span> · {{ mod.xp_reward }} XP · {{ mod.duration_minutes }} мин</small>
+  </div>
+  <a href="{{ url_for('content.module_edit', module_id=mod.id) }}" class="btn btn-outline-secondary rounded-3 btn-sm">
+    <i class="bi bi-pencil me-1"></i>Настройки модуля
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Lessons -->
+  <div class="col-lg-6">
+    <div class="card border-0 rounded-4 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0"><i class="bi bi-book-fill text-brand me-1"></i>Уроки <span class="badge bg-secondary ms-1">{{ lessons|length }}</span></h6>
+        <a href="{{ url_for('content.lesson_new', module_id=mod.id) }}" class="btn btn-sm btn-brand rounded-3">
+          <i class="bi bi-plus-lg me-1"></i>Добавить урок
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if lessons %}
+        <div class="list-group list-group-flush">
+          {% for lesson in lessons %}
+          <div class="list-group-item border-0 px-4 py-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted small me-2">{{ lesson.order_in_module }}</span>
+              <div class="flex-grow-1">
+                <div class="fw-semibold small">{{ lesson.title }}</div>
+                <small class="text-muted">{{ {'theory':'Теория','practice':'Практика','video':'Видео'}.get(lesson.lesson_type, lesson.lesson_type) }}</small>
+              </div>
+              <div class="d-flex gap-1">
+                <a href="{{ url_for('content.lesson_edit', lesson_id=lesson.id) }}"
+                   class="btn btn-sm btn-outline-secondary rounded-3">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('content.lesson_delete', lesson_id=lesson.id) }}"
+                      onsubmit="return confirm('Удалить урок «{{ lesson.title }}»?')">
+                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-muted text-center">Уроков пока нет.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions -->
+  <div class="col-lg-6">
+    <div class="card border-0 rounded-4 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0"><i class="bi bi-question-circle-fill text-accent me-1"></i>Тест <span class="badge bg-secondary ms-1">{{ questions|length }}</span></h6>
+        <a href="{{ url_for('content.question_new', module_id=mod.id) }}" class="btn btn-sm btn-outline-primary rounded-3">
+          <i class="bi bi-plus-lg me-1"></i>Добавить вопрос
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if questions %}
+        <div class="list-group list-group-flush">
+          {% for q in questions %}
+          <div class="list-group-item border-0 px-4 py-3">
+            <div class="d-flex align-items-start gap-2">
+              <span class="text-muted small me-1 mt-1">{{ loop.index }}.</span>
+              <div class="flex-grow-1">
+                <div class="small fw-semibold">{{ q.question_text[:80] }}{% if q.question_text|length > 80 %}…{% endif %}</div>
+                {% set opts = q.options_json | from_json %}
+                {% set corr = q.correct_answer_json | from_json %}
+                <small class="text-muted">
+                  {% for i, opt in opts | enumerate %}
+                    {% if i in corr %}<span class="text-success fw-semibold">✓ {{ opt }}</span>{% else %}{{ opt }}{% endif %}
+                    {% if not loop.last %} / {% endif %}
+                  {% endfor %}
+                </small>
+              </div>
+              <div class="d-flex gap-1 flex-shrink-0">
+                <a href="{{ url_for('content.question_edit', question_id=q.id) }}"
+                   class="btn btn-sm btn-outline-secondary rounded-3">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('content.question_delete', question_id=q.id) }}"
+                      onsubmit="return confirm('Удалить вопрос?')">
+                  <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-muted text-center">Вопросов пока нет.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <div class="col-12">
+    <div class="card border-0 rounded-4 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2">
+        <h6 class="fw-bold mb-0"><i class="bi bi-list-check text-success me-1"></i>Чеклист практики <span class="badge bg-secondary ms-1">{{ checklist|length }}</span></h6>
+      </div>
+      <div class="card-body px-4 pb-4">
+        {% if checklist %}
+        <div class="mb-3">
+          {% for item in checklist %}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-check2-square text-success"></i>
+            <span class="flex-grow-1 small">{{ item.item_text }}</span>
+            <form method="POST" action="{{ url_for('content.checklist_delete', item_id=item.id) }}"
+                  onsubmit="return confirm('Удалить пункт?')">
+              <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 py-0 px-2">
+                <i class="bi bi-trash" style="font-size:0.7rem"></i>
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <form method="POST" action="{{ url_for('content.checklist_add', module_id=mod.id) }}"
+              class="d-flex gap-2">
+          <input type="text" name="item_text" class="form-control rounded-3"
+                 placeholder="Добавить новый пункт чеклиста..." required>
+          <button type="submit" class="btn btn-outline-success rounded-3 flex-shrink-0">
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

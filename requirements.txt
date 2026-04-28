@@ -1,0 +1,30 @@
+# Sportleader Academy — Python dependencies
+# Install with: pip install -r requirements.txt
+#
+# PostgreSQL is required in production.
+# SQLite is supported only in development mode.
+
+# Web framework
+Flask==3.1.0
+Werkzeug==3.1.3
+
+# ORM / database
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.40
+psycopg2-binary==2.9.10
+
+# Auth
+Flask-Login==0.6.3
+
+# Security
+Flask-WTF==1.2.2
+
+# Rate limiting
+Flask-Limiter==3.9.2
+limits==3.14.1
+
+# AI chat
+anthropic>=0.49.0
+
+# Production WSGI server
+gunicorn==23.0.0

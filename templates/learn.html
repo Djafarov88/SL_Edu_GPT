@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Обучение — Sportleader Academy{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-book-fill text-brand me-2"></i>Каталог модулей</h4>
+</div>
+
+<!-- Category filter -->
+{% if categories %}
+<div class="d-flex gap-2 flex-wrap mb-4">
+  <a href="{{ url_for('learn.learn') }}" class="btn btn-sm {% if not filter_cat %}btn-brand{% else %}btn-outline-secondary{% endif %} rounded-pill">Все</a>
+  {% for cat in categories %}
+  <a href="{{ url_for('learn.learn', category=cat) }}" class="btn btn-sm {% if filter_cat == cat %}btn-brand{% else %}btn-outline-secondary{% endif %} rounded-pill">{{ cat }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if available %}
+<h6 class="text-muted text-uppercase small fw-bold mb-3">Доступные модули</h6>
+<div class="row g-3 mb-5">
+  {% for mod in available %}
+  {% set prog = progresses.get(mod.id) %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-0 rounded-4 shadow-sm module-card {% if prog and prog.status == 'completed' %}border-success{% endif %}">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="badge bg-label-{{ mod.level_required }}">{{ mod.level_label }}</span>
+          {% if prog and prog.status == 'completed' %}
+          <span class="badge bg-success"><i class="bi bi-check me-1"></i>Пройден</span>
+          {% elif prog and prog.status == 'in_progress' %}
+          <span class="badge bg-warning text-dark">В процессе</span>
+          {% endif %}
+        </div>
+        <h6 class="fw-bold mb-2">{{ mod.title }}</h6>
+        <p class="text-muted small mb-3">{{ mod.description }}</p>
+        <div class="d-flex gap-3 text-muted small mb-3">
+          <span><i class="bi bi-clock me-1"></i>{{ mod.duration_minutes }} мин</span>
+          <span><i class="bi bi-star me-1 text-accent"></i>+{{ mod.xp_reward }} XP</span>
+          <span><i class="bi bi-journal-text me-1"></i>{{ mod.lessons.count() }} урок(а)</span>
+        </div>
+        {% if prog and prog.best_score > 0 %}
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="progress flex-grow-1" style="height:4px">
+            <div class="progress-bar {% if prog.best_score >= 80 %}bg-success{% else %}bg-warning{% endif %}" style="width:{{ prog.best_score }}%"></div>
+          </div>
+          <small class="text-muted">{{ prog.best_score }}%</small>
+        </div>
+        {% endif %}
+        <a href="{{ url_for('learn.module_view', code=mod.code) }}" class="btn btn-brand btn-sm rounded-3 w-100">
+          {% if prog and prog.status == 'completed' %}<i class="bi bi-arrow-repeat me-1"></i>Повторить
+          {% elif prog and prog.status == 'in_progress' %}<i class="bi bi-play-fill me-1"></i>Продолжить
+          {% else %}<i class="bi bi-play-fill me-1"></i>Начать{% endif %}
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="bi bi-inbox display-4 mb-3 d-block"></i>
+  <h5>Нет доступных модулей</h5>
+  <p>Модули появятся по мере роста вашего уровня.</p>
+</div>
+{% endif %}
+
+{% if locked %}
+<h6 class="text-muted text-uppercase small fw-bold mb-3"><i class="bi bi-lock-fill me-1"></i>Заблокированные модули</h6>
+<div class="row g-3">
+  {% for mod in locked %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-0 rounded-4 shadow-sm opacity-50">
+      <div class="card-body p-4">
+        <span class="badge bg-secondary mb-2">{{ mod.level_label }} · Заблокировано</span>
+        <h6 class="fw-bold mb-1">{{ mod.title }}</h6>
+        <p class="text-muted small mb-0">{{ mod.description }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

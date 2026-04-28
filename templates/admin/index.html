@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Управление — Sportleader Academy{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4"><i class="bi bi-gear-fill text-brand me-2"></i>Панель управления</h4>
+
+<!-- Stats cards -->
+<div class="row g-3 mb-5">
+  <div class="col-6 col-md-3">
+    <div class="card border-0 rounded-4 shadow-sm text-center p-4">
+      <i class="bi bi-people-fill text-brand fs-2 mb-2"></i>
+      <div class="fw-bold display-6">{{ users|length }}</div>
+      <small class="text-muted">Сотрудников</small>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 rounded-4 shadow-sm text-center p-4">
+      <i class="bi bi-star-fill text-accent fs-2 mb-2"></i>
+      <div class="fw-bold display-6">{{ total_xp }}</div>
+      <small class="text-muted">Всего XP</small>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 rounded-4 shadow-sm text-center p-4">
+      <i class="bi bi-check-circle-fill text-success fs-2 mb-2"></i>
+      <div class="fw-bold display-6">{{ completed_total }}</div>
+      <small class="text-muted">Модулей пройдено</small>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 rounded-4 shadow-sm text-center p-4">
+      <i class="bi bi-clipboard-check text-warning fs-2 mb-2"></i>
+      <div class="fw-bold display-6">{{ pending_checklists|length }}</div>
+      <small class="text-muted">Ждут подтверждения</small>
+    </div>
+  </div>
+</div>
+
+<!-- Level distribution -->
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card border-0 rounded-4 shadow-sm p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-brand me-1"></i>Распределение по уровням</h6>
+      {% for level, label in [('start','СТАРТ'),('profi','ПРОФИ'),('master','МАСТЕР')] %}
+      {% set count = level_counts.get(level, 0) %}
+      {% set pct = (count / users|length * 100)|int if users else 0 %}
+      <div class="mb-2">
+        <div class="d-flex justify-content-between small mb-1">
+          <span class="badge level-badge-{{ level }}">{{ label }}</span>
+          <span>{{ count }}</span>
+        </div>
+        <div class="progress" style="height:6px">
+          <div class="progress-bar bg-brand-primary" style="width:{{ pct }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Pending checklists -->
+  <div class="col-md-8">
+    <div class="card border-0 rounded-4 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2">
+        <h6 class="fw-bold text-uppercase small text-muted mb-0"><i class="bi bi-clipboard-check me-1"></i>Чеклисты на подтверждение</h6>
+      </div>
+      <div class="card-body p-0">
+        {% if pending_checklists %}
+        <div class="list-group list-group-flush rounded-4">
+          {% for cc in pending_checklists %}
+          <div class="list-group-item border-0 px-4 py-3 d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ cc.user.full_name }}</div>
+              <small class="text-muted">{{ cc.module.title }}</small>
+            </div>
+            <form method="POST" action="{{ url_for('admin.confirm_checklist', cc_id=cc.id) }}">
+              <button type="submit" class="btn btn-success btn-sm rounded-3">
+                <i class="bi bi-check me-1"></i>Подтвердить (+20 XP)
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-muted small">Нет ожидающих подтверждения</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick links -->
+<div class="row g-3">
+  <div class="col-md-6">
+    <a href="{{ url_for('admin.users') }}" class="card border-0 rounded-4 shadow-sm text-decoration-none hover-lift d-block">
+      <div class="card-body p-4 d-flex align-items-center gap-3">
+        <div class="bg-brand-light rounded-3 p-3"><i class="bi bi-people-fill text-brand fs-3"></i></div>
+        <div>
+          <h6 class="fw-bold mb-1">Управление сотрудниками</h6>
+          <small class="text-muted">Просмотр, создание, деактивация</small>
+        </div>
+        <i class="bi bi-chevron-right text-muted ms-auto"></i>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6">
+    <a href="{{ url_for('admin.reports') }}" class="card border-0 rounded-4 shadow-sm text-decoration-none hover-lift d-block">
+      <div class="card-body p-4 d-flex align-items-center gap-3">
+        <div class="bg-brand-light rounded-3 p-3"><i class="bi bi-file-earmark-bar-graph-fill text-brand fs-3"></i></div>
+        <div>
+          <h6 class="fw-bold mb-1">Отчёты по обучению</h6>
+          <small class="text-muted">Кто что прошёл, результаты тестов</small>
+        </div>
+        <i class="bi bi-chevron-right text-muted ms-auto"></i>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

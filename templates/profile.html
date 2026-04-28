@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Мой профиль — Sportleader Academy{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 rounded-4 shadow-sm text-center p-4 mb-4">
+      <div class="avatar-xl bg-brand-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-1 mx-auto mb-3" style="width:100px;height:100px">
+        {{ user.full_name[0] }}
+      </div>
+      <h5 class="fw-bold mb-1">{{ user.full_name }}</h5>
+      <p class="text-muted mb-1">{{ user.job_title if user.job_title else user.role_label }}</p>
+      <span class="badge level-badge-{{ user.level }} mb-3">{{ user.level_label }}</span>
+      <div class="text-start w-100">
+        <table class="table table-sm table-borderless mb-0" style="font-size:0.85rem">
+          {% if user.department %}
+          <tr><td class="text-muted pe-2" style="width:45%">Подразделение</td><td class="fw-semibold">{{ user.department }}</td></tr>
+          {% elif user.store_name %}
+          <tr><td class="text-muted pe-2">Магазин</td><td class="fw-semibold">{{ user.store_name }}</td></tr>
+          {% endif %}
+          {% if user.direction %}
+          <tr><td class="text-muted pe-2">Направление</td><td class="fw-semibold">{{ user.direction }}</td></tr>
+          {% endif %}
+          {% if user.phone %}
+          <tr><td class="text-muted pe-2">Телефон</td><td class="fw-semibold">{{ user.phone }}</td></tr>
+          {% endif %}
+          <tr><td class="text-muted pe-2">Логин</td><td class="fw-semibold text-brand">{{ user.username }}</td></tr>
+          {% if user.hire_date %}
+          <tr><td class="text-muted pe-2">В системе с</td><td class="fw-semibold">{{ user.hire_date.strftime('%d.%m.%Y') }}</td></tr>
+          {% endif %}
+        </table>
+      </div>
+      <div class="bg-brand-light rounded-3 p-3">
+        <div class="fw-bold display-6 text-brand">{{ user.xp_total }}</div>
+        <small class="text-muted">Всего XP</small>
+        <div class="progress mt-2" style="height:8px">
+          <div class="progress-bar bg-brand-primary" style="width:{{ user.level_progress_pct() }}%"></div>
+        </div>
+        {% if user.xp_to_next_level() > 0 %}
+        <small class="text-muted">ещё {{ user.xp_to_next_level() }} XP</small>
+        {% else %}
+        <small class="text-success">Максимальный уровень!</small>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card border-0 rounded-4 shadow-sm p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-brand me-2"></i>Статистика</h6>
+      <ul class="list-unstyled">
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Уроков прочитано</span>
+          <strong>{{ total_lessons }}</strong>
+        </li>
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Тестов пройдено</span>
+          <strong>{{ total_tests }}</strong>
+        </li>
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Бейджей получено</span>
+          <strong>{{ user_badges|length }}</strong>
+        </li>
+        <li class="d-flex justify-content-between">
+          <span class="text-muted small">Модулей завершено</span>
+          <strong>{{ progresses|selectattr('status','equalto','completed')|list|length }}</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <!-- Badges -->
+    <div class="card border-0 rounded-4 shadow-sm mb-4">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2">
+        <h6 class="fw-bold text-uppercase small text-muted mb-0"><i class="bi bi-award-fill text-accent me-1"></i>Мои бейджи</h6>
+      </div>
+      <div class="card-body px-4 pb-4">
+        {% if user_badges %}
+        <div class="row g-3">
+          {% for ub in user_badges %}
+          <div class="col-sm-6 col-md-4">
+            <div class="bg-light rounded-3 p-3 d-flex align-items-center gap-2">
+              <span class="fs-3">{{ ub.badge.icon_emoji }}</span>
+              <div>
+                <div class="fw-semibold small">{{ ub.badge.name }}</div>
+                <div class="text-muted" style="font-size:0.75rem">{{ ub.badge.description }}</div>
+                <div class="text-muted" style="font-size:0.7rem">{{ ub.earned_at.strftime('%d.%m.%Y') }}</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Бейджей пока нет. Пройдите первый модуль!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Progress history -->
+    <div class="card border-0 rounded-4 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2">
+        <h6 class="fw-bold text-uppercase small text-muted mb-0"><i class="bi bi-clock-history me-1"></i>История обучения</h6>
+      </div>
+      <div class="card-body p-0">
+        {% if progresses %}
+        <div class="list-group list-group-flush rounded-4">
+          {% for p in progresses %}
+          <div class="list-group-item border-0 px-4 py-3">
+            <div class="d-flex align-items-center gap-3">
+              {% if p.status == 'completed' %}<i class="bi bi-check-circle-fill text-success fs-5"></i>
+              {% elif p.status == 'in_progress' %}<i class="bi bi-circle-half text-warning fs-5"></i>
+              {% else %}<i class="bi bi-circle text-muted fs-5"></i>{% endif %}
+              <div class="flex-grow-1">
+                <div class="fw-semibold">{{ p.module.title }}</div>
+                <small class="text-muted">
+                  Уроков: {{ p.lessons_read_count() }} · Тест: {{ p.best_score }}%
+                  {% if p.completed_at %} · Завершён {{ p.completed_at.strftime('%d.%m.%Y') }}{% endif %}
+                </small>
+              </div>
+              {% if p.xp_earned > 0 %}
+              <span class="badge bg-accent text-dark">+{{ p.xp_earned }} XP</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-muted">Обучение ещё не начато.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

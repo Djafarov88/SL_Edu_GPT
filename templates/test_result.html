@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Результаты теста — {{ module.title }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <!-- Result banner -->
+  <div class="card border-0 rounded-4 shadow mb-4 overflow-hidden">
+    <div class="card-header border-0 text-center py-5 {% if passed %}bg-success{% else %}bg-danger{% endif %} text-white">
+      {% if passed %}
+      <i class="bi bi-trophy-fill display-4 d-block mb-2"></i>
+      <h3 class="fw-bold">Тест пройден!</h3>
+      <p class="opacity-75 mb-0">Отличная работа, продолжайте обучение!</p>
+      {% else %}
+      <i class="bi bi-x-circle-fill display-4 d-block mb-2"></i>
+      <h3 class="fw-bold">Тест не пройден</h3>
+      <p class="opacity-75 mb-0">Не расстраивайтесь, повторите материал и попробуйте снова.</p>
+      {% endif %}
+    </div>
+    <div class="card-body p-4">
+      <div class="row text-center g-3">
+        <div class="col-4">
+          <div class="fw-bold display-6 {% if passed %}text-success{% else %}text-danger{% endif %}">{{ score_pct }}%</div>
+          <small class="text-muted">Результат</small>
+        </div>
+        <div class="col-4">
+          <div class="fw-bold display-6">{{ correct }}/{{ total }}</div>
+          <small class="text-muted">Верных ответов</small>
+        </div>
+        <div class="col-4">
+          <div class="fw-bold display-6">{{ pass_score }}%</div>
+          <small class="text-muted">Проходной балл</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Answer review -->
+  <h6 class="fw-bold text-uppercase small text-muted mb-3">Разбор ответов</h6>
+  {% for r in results %}
+  <div class="card border-0 rounded-4 shadow-sm mb-3 border-start border-4 {% if r.is_correct %}border-success{% else %}border-danger{% endif %}">
+    <div class="card-body p-4">
+      <div class="d-flex gap-2 mb-3">
+        {% if r.is_correct %}
+        <i class="bi bi-check-circle-fill text-success flex-shrink-0 mt-1"></i>
+        {% else %}
+        <i class="bi bi-x-circle-fill text-danger flex-shrink-0 mt-1"></i>
+        {% endif %}
+        <p class="fw-semibold mb-0">{{ r.question }}</p>
+      </div>
+      <ul class="list-unstyled mb-2">
+        {% for i, opt in r.indexed_options %}
+        <li class="py-1 px-3 rounded-3 mb-1 small
+          {% if i in r.correct_answer %}bg-success bg-opacity-10 text-success fw-semibold
+          {% elif i in r.user_answer and i not in r.correct_answer %}bg-danger bg-opacity-10 text-danger
+          {% else %}text-muted{% endif %}">
+          {% if i in r.correct_answer %}<i class="bi bi-check me-1"></i>{% elif i in r.user_answer %}<i class="bi bi-x me-1"></i>{% endif %}
+          {{ opt }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if r.explanation %}
+      <div class="alert alert-light border-0 py-2 px-3 mt-2 mb-0 small rounded-3">
+        <i class="bi bi-lightbulb-fill text-accent me-1"></i><strong>Объяснение:</strong> {{ r.explanation }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="d-flex gap-3 mt-4">
+    <a href="{{ url_for('learn.module_view', code=module.code) }}" class="btn btn-outline-secondary rounded-3">
+      <i class="bi bi-arrow-left me-1"></i>К модулю
+    </a>
+    {% if not passed and prog.test_attempts < (module.test.max_attempts if module.test else 3) %}
+    <a href="{{ url_for('learn.test_view', code=module.code) }}" class="btn btn-brand rounded-3">
+      <i class="bi bi-arrow-repeat me-1"></i>Попробовать снова
+    </a>
+    {% elif passed %}
+    <a href="{{ url_for('learn.learn') }}" class="btn btn-brand rounded-3">
+      <i class="bi bi-book-fill me-1"></i>Следующий модуль
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

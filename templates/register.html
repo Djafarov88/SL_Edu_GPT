@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — Sportleader Academy{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-0 rounded-4 shadow-sm p-4">
+      <h5 class="fw-bold mb-4">Создать нового сотрудника</h5>
+      <form method="POST">
+        <div class="mb-3"><label class="form-label fw-semibold">Полное имя</label><input type="text" name="full_name" class="form-control rounded-3" required></div>
+        <div class="mb-3"><label class="form-label fw-semibold">Логин</label><input type="text" name="username" class="form-control rounded-3" required></div>
+        <div class="mb-3"><label class="form-label fw-semibold">Пароль</label><input type="password" name="password" class="form-control rounded-3" required></div>
+        <div class="mb-3"><label class="form-label fw-semibold">Должность</label>
+          <select name="role" class="form-select rounded-3">
+            <option value="seller">Продавец-консультант</option>
+            <option value="inventory">Продавец инвентаря</option>
+            <option value="cashier">Кассир</option>
+            <option value="admin_store">Администратор магазина</option>
+            <option value="director">Директор</option>
+            <option value="director_retail">Розничный директор</option>
+            <option value="hr">HR</option>
+          </select>
+        </div>
+        <div class="mb-4"><label class="form-label fw-semibold">Магазин</label><input type="text" name="store_name" class="form-control rounded-3" value="Махачкала"></div>
+        <button type="submit" class="btn btn-brand w-100 rounded-3 fw-bold">Создать</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}ИИ-Ассистент — Sportleader Academy{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9 col-xl-8">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-chat-dots-fill text-brand me-2"></i>ИИ-Наставник</h4>
+        <p class="text-muted mb-0 small">Задавайте вопросы по работе, продуктам, стандартам — я отвечу!</p>
+      </div>
+      <button onclick="clearChat()" class="btn btn-outline-secondary btn-sm rounded-3">
+        <i class="bi bi-trash me-1"></i>Очистить
+      </button>
+    </div>
+
+    <!-- Chat messages -->
+    <div class="card border-0 rounded-4 shadow-sm mb-3">
+      <div class="card-body p-0">
+        <div id="chatMessages" class="chat-messages p-4" style="height:480px;overflow-y:auto">
+          <!-- System welcome -->
+          <div class="d-flex gap-2 mb-4">
+            <div class="avatar-sm bg-brand-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+              <i class="bi bi-robot"></i>
+            </div>
+            <div class="chat-bubble chat-bubble-ai p-3 rounded-4 rounded-tl-0 bg-light text-dark mw-75">
+              <p class="mb-0">Привет, {{ current_user.full_name.split()[0] }}! Я ваш корпоративный ИИ-наставник. Задайте любой вопрос по работе — о продуктах, брендах, скриптах продаж или стандартах компании.</p>
+            </div>
+          </div>
+          <!-- History -->
+          {% for msg in history %}
+          {% if msg.role == 'user' %}
+          <div class="d-flex gap-2 mb-3 flex-row-reverse">
+            <div class="avatar-sm bg-accent text-dark rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold">
+              {{ current_user.full_name[0] }}
+            </div>
+            <div class="chat-bubble chat-bubble-user p-3 rounded-4 rounded-tr-0 bg-brand-primary text-white mw-75">
+              <p class="mb-0">{{ msg.content }}</p>
+            </div>
+          </div>
+          {% else %}
+          <div class="d-flex gap-2 mb-3">
+            <div class="avatar-sm bg-brand-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+              <i class="bi bi-robot"></i>
+            </div>
+            <div class="chat-bubble chat-bubble-ai p-3 rounded-4 rounded-tl-0 bg-light text-dark mw-75">
+              <p class="mb-0" style="white-space:pre-line">{{ msg.content }}</p>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+          <!-- Typing indicator (hidden) -->
+          <div id="typingIndicator" class="d-flex gap-2 mb-3 d-none">
+            <div class="avatar-sm bg-brand-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+              <i class="bi bi-robot"></i>
+            </div>
+            <div class="chat-bubble chat-bubble-ai p-3 rounded-4 rounded-tl-0 bg-light">
+              <div class="typing-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick questions -->
+    <div class="d-flex gap-2 flex-wrap mb-3">
+      {% set quick = [
+        'Как работать с возражением «дорого»?',
+        'Расскажи о технологии Boost от Adidas',
+        'Что такое метод ХПВ?',
+        'Какую беговую дорожку выбрать при болях в суставах?',
+      ] %}
+      {% for q in quick %}
+      <button onclick="sendQuick(this.textContent)" class="btn btn-outline-secondary btn-sm rounded-pill">{{ q }}</button>
+      {% endfor %}
+    </div>
+
+    <!-- Input form -->
+    <div class="card border-0 rounded-4 shadow-sm">
+      <div class="card-body p-3">
+        <form id="chatForm" class="d-flex gap-2">
+          <input id="messageInput" type="text" class="form-control rounded-3" placeholder="Введите вопрос..." autocomplete="off">
+          <button type="submit" class="btn btn-brand rounded-3 px-4" id="sendBtn">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+const typingIndicator = document.getElementById('typingIndicator');
+const sendBtn = document.getElementById('sendBtn');
+
+function scrollToBottom() {
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+scrollToBottom();
+
+function addMessage(role, content) {
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.className = `d-flex gap-2 mb-3 ${isUser ? 'flex-row-reverse' : ''}`;
+  const avatar = isUser
+    ? `<div class="avatar-sm bg-accent text-dark rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold">{{ current_user.full_name[0] }}</div>`
+    : `<div class="avatar-sm bg-brand-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"><i class="bi bi-robot"></i></div>`;
+  const bubbleClass = isUser ? 'bg-brand-primary text-white rounded-tr-0' : 'bg-light text-dark rounded-tl-0';
+  div.innerHTML = `${avatar}<div class="chat-bubble p-3 rounded-4 ${bubbleClass} mw-75"><p class="mb-0" style="white-space:pre-line">${content.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p></div>`;
+  chatMessages.insertBefore(div, typingIndicator);
+  scrollToBottom();
+}
+
+document.getElementById('chatForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const msg = messageInput.value.trim();
+  if (!msg) return;
+  messageInput.value = '';
+  sendBtn.disabled = true;
+  addMessage('user', msg);
+  typingIndicator.classList.remove('d-none');
+  scrollToBottom();
+  try {
+    const resp = await fetch('{{ url_for("chat.chat_send") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCsrfToken()
+      },
+      body: `message=${encodeURIComponent(msg)}`
+    });
+    const data = await resp.json();
+    typingIndicator.classList.add('d-none');
+    addMessage('assistant', data.reply || data.error);
+  } catch(err) {
+    typingIndicator.classList.add('d-none');
+    addMessage('assistant', 'Ошибка соединения. Попробуйте снова.');
+  }
+  sendBtn.disabled = false;
+  messageInput.focus();
+});
+
+function sendQuick(text) {
+  messageInput.value = text;
+  document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+}
+
+async function clearChat() {
+  if (!confirm('Очистить историю чата?')) return;
+  await fetch('{{ url_for("chat.chat_clear") }}', {
+    method: 'POST',
+    headers: {'X-CSRFToken': getCsrfToken()}
+  });
+  chatMessages.querySelectorAll('.d-flex.mb-3').forEach(el => el.remove());
+}
+</script>
+{% endblock %}

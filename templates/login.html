@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Вход — Sportleader Academy{% endblock %}
+{% block content %}
+<div class="login-card">
+  <div class="login-header">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Спортлидер" class="login-logo-full">
+    <p class="mb-0 mt-3" style="color:rgba(255,255,255,.7);font-size:13px">Учебная платформа компании Спортлидер</p>
+  </div>
+  <div class="login-body">
+    <h5 class="fw-bold mb-1" style="font-size:17px">Добро пожаловать</h5>
+    <p class="text-muted mb-4" style="font-size:13px">Введите свои данные для входа</p>
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Логин</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0" style="border-color:#e5e7eb">
+            <i class="bi bi-person text-muted"></i>
+          </span>
+          <input type="text" name="username" class="form-control border-start-0" style="border-color:#e5e7eb" placeholder="Ваш логин" required autofocus>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Пароль</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0" style="border-color:#e5e7eb">
+            <i class="bi bi-lock text-muted"></i>
+          </span>
+          <input type="password" name="password" class="form-control border-start-0" style="border-color:#e5e7eb" placeholder="Ваш пароль" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-brand w-100 py-2" style="font-size:15px">
+        Войти <i class="bi bi-arrow-right ms-1"></i>
+      </button>
+    </form>
+  </div>
+  <div class="login-disclaimer">
+    Весь учебный контент является собственностью компании Спортлидер. Запрещено распространение или передача третьим лицам внутренней информации компании.
+  </div>
+</div>
+{% endblock %}

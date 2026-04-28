@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Тест: {{ module.title }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('learn.learn') }}" class="text-brand">Обучение</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('learn.module_view', code=module.code) }}" class="text-brand">{{ module.title }}</a></li>
+      <li class="breadcrumb-item active">Тест</li>
+    </ol>
+  </nav>
+
+  <div class="card border-0 rounded-4 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-3 mb-2">
+        <div class="bg-brand-light rounded-3 p-2"><i class="bi bi-patch-question-fill text-brand fs-4"></i></div>
+        <div>
+          <h5 class="fw-bold mb-0">{{ module.title }}</h5>
+          <small class="text-muted">{{ questions|length }} вопросов · Проходной балл: {{ test.pass_score_percent }}%</small>
+        </div>
+      </div>
+      <div class="alert alert-info mb-0 mt-3 py-2 px-3 small rounded-3">
+        <i class="bi bi-info-circle me-1"></i>Попытка {{ prog.test_attempts + 1 }} из {{ test.max_attempts }}. Выберите один правильный ответ на каждый вопрос.
+      </div>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('learn.test_submit', code=module.code) }}" id="testForm">
+    {% for q in questions %}
+    <div class="card border-0 rounded-4 shadow-sm mb-3" id="q{{ loop.index }}">
+      <div class="card-body p-4">
+        <div class="d-flex gap-2 mb-3">
+          <span class="badge bg-brand-primary text-white rounded-circle" style="width:28px;height:28px;line-height:1.4">{{ loop.index }}</span>
+          <p class="fw-semibold mb-0">{{ q.question_text }}</p>
+        </div>
+        {% for opt in q.options %}
+        <label class="answer-option d-flex align-items-center gap-3 p-3 mb-2 rounded-3 cursor-pointer">
+          <input type="radio" name="q_{{ q.id }}" value="{{ loop.index0 }}" class="form-check-input mt-0 flex-shrink-0" required>
+          <span>{{ opt }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="d-flex gap-3 justify-content-between mt-4">
+      <a href="{{ url_for('learn.module_view', code=module.code) }}" class="btn btn-outline-secondary rounded-3">
+        <i class="bi bi-arrow-left me-1"></i>Назад
+      </a>
+      <button type="submit" class="btn btn-brand btn-lg px-5 rounded-3 fw-bold">
+        <i class="bi bi-send-check-fill me-2"></i>Сдать тест
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Highlight selected answer
+document.querySelectorAll('.answer-option input').forEach(inp => {
+  inp.addEventListener('change', function() {
+    const name = this.name;
+    document.querySelectorAll(`input[name="${name}"]`).forEach(i => {
+      i.closest('.answer-option').classList.remove('selected');
+    });
+    this.closest('.answer-option').classList.add('selected');
+  });
+});
+</script>
+{% endblock %}

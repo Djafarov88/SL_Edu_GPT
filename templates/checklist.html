@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Чеклист: {{ module.title }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('learn.learn') }}" class="text-brand">Обучение</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('learn.module_view', code=module.code) }}" class="text-brand">{{ module.title }}</a></li>
+    <li class="breadcrumb-item active">Чеклист</li>
+  </ol>
+</nav>
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card border-0 rounded-4 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4 pb-2">
+        <h5 class="fw-bold mb-1"><i class="bi bi-clipboard-check-fill text-brand me-2"></i>Чеклист практики</h5>
+        <p class="text-muted small mb-0">{{ module.title }}</p>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <ul class="list-unstyled">
+          {% for item in items %}
+          <li class="d-flex align-items-start gap-3 mb-3 p-3 bg-light rounded-3">
+            {% if done %}<i class="bi bi-check-square-fill text-success fs-5 flex-shrink-0 mt-1"></i>
+            {% else %}<i class="bi bi-square text-muted fs-5 flex-shrink-0 mt-1"></i>{% endif %}
+            <span>{{ item.text }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if done %}
+        <div class="alert alert-success rounded-3"><i class="bi bi-check-circle-fill me-2"></i>Чеклист подтверждён администратором!</div>
+        {% elif pending %}
+        <div class="alert alert-warning rounded-3"><i class="bi bi-clock me-2"></i>Запрос отправлен, ожидает подтверждения администратора.</div>
+        {% else %}
+        <form method="POST" action="{{ url_for('learn.checklist_request', code=module.code) }}">
+          <button type="submit" class="btn btn-brand w-100 rounded-3 fw-bold">
+            <i class="bi bi-send-fill me-2"></i>Отправить на подтверждение
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

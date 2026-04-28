@@ -1,0 +1,24 @@
+kind = "web"
+previewPath = "/academy/"
+title = "Sportleader Academy LMS"
+version = "1.0.0"
+id = "artifacts/academy"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/academy/" ]
+localPort = 5001
+
+[services.development]
+run = "cd /home/runner/workspace/artifacts/academy && python app.py"
+
+[services.production.run]
+args = ["python", "artifacts/academy/app.py"]
+
+[services.production.run.env]
+PORT = "5001"
+SESSION_SECRET = "${SESSION_SECRET}"
+
+[services.env]
+PORT = "5001"

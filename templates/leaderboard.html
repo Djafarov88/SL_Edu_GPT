@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Рейтинг — Sportleader Academy{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-trophy-fill text-warning me-2"></i>Рейтинг сотрудников</h4>
+  {% if stores|length > 1 %}
+  <div class="d-flex gap-2">
+    {% for store in stores %}
+    <a href="{{ url_for('main.leaderboard', store=store) }}" class="btn btn-sm {% if store == current_store %}btn-brand{% else %}btn-outline-secondary{% endif %} rounded-pill">{{ store }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if users %}
+<div class="row g-3">
+  {% for user in users %}
+  <div class="col-12">
+    <div class="card border-0 rounded-4 shadow-sm {% if user.id == current_user.id %}border border-brand{% endif %}">
+      <div class="card-body px-4 py-3">
+        <div class="d-flex align-items-center gap-4">
+          <!-- Rank -->
+          <div class="text-center flex-shrink-0" style="width:48px">
+            {% if loop.index == 1 %}
+            <span class="fs-2">🥇</span>
+            {% elif loop.index == 2 %}
+            <span class="fs-2">🥈</span>
+            {% elif loop.index == 3 %}
+            <span class="fs-2">🥉</span>
+            {% else %}
+            <span class="fw-bold text-muted fs-4">#{{ loop.index }}</span>
+            {% endif %}
+          </div>
+          <!-- Avatar -->
+          <div class="avatar-md bg-brand-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:48px;height:48px">
+            {{ user.full_name[0] }}
+          </div>
+          <!-- Info -->
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="fw-bold">{{ user.full_name }}</span>
+              {% if user.id == current_user.id %}<span class="badge bg-brand-primary text-white">Вы</span>{% endif %}
+            </div>
+            <small class="text-muted">{{ user.role_label }} · {{ user.store_name }}</small>
+          </div>
+          <!-- Level -->
+          <div class="text-center d-none d-md-block flex-shrink-0">
+            <span class="badge level-badge-{{ user.level }}">{{ user.level_label }}</span>
+          </div>
+          <!-- XP -->
+          <div class="text-end flex-shrink-0">
+            <div class="fw-bold text-brand fs-5">{{ user.xp_total }}</div>
+            <small class="text-muted">XP</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="bi bi-people display-4 mb-3 d-block"></i>
+  <h5>Нет данных для этого магазина</h5>
+</div>
+{% endif %}
+{% endblock %}
