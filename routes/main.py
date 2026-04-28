@@ -1,9 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from extensions import db
-from models import User, Module, UserProgress, UserBadge, Notification, LEVEL_LABELS
+from models import User, Module, UserProgress, UserBadge, Notification, LEVEL_LABELS, ROLE_LABELS
 
 main_bp = Blueprint('main', __name__)
+GLOBAL_RATING_ROLES = ('superadmin', 'hr', 'director_retail')
+RATING_ROLES = ('seller', 'cashier', 'admin_store', 'inventory', 'director')
+RATING_MODES = ('all', 'lagging', 'role')
 
 
 @main_bp.route('/')
@@ -77,17 +80,62 @@ def profile():
 @main_bp.route('/leaderboard')
 @login_required
 def leaderboard():
-    store_filter = request.args.get('store', current_user.store_name)
-    if current_user.role == 'superadmin':
-        stores = db.session.query(User.store_name).distinct().all()
-        stores = [s[0] for s in stores]
-        users = User.query.filter(User.is_active == True, User.role != 'superadmin').filter_by(store_name=store_filter).order_by(User.xp_total.desc()).limit(20).all()
+    is_global_rating = current_user.role in GLOBAL_RATING_ROLES
+    selected_mode = request.args.get('mode', 'all')
+    selected_store = request.args.get('store', 'all' if is_global_rating else current_user.store_name)
+    selected_role = request.args.get('role', 'all')
+
+    if selected_mode not in RATING_MODES:
+        selected_mode = 'all'
+    if selected_role != 'all' and selected_role not in RATING_ROLES:
+        selected_role = 'all'
+
+    if is_global_rating:
+        stores = [
+            s[0] for s in db.session.query(User.store_name)
+            .filter(User.store_name.isnot(None))
+            .distinct()
+            .order_by(User.store_name)
+            .all()
+        ]
+        if selected_store != 'all' and selected_store not in stores:
+            selected_store = 'all'
     else:
         stores = [current_user.store_name]
-        store_filter = current_user.store_name
-        users = User.query.filter_by(store_name=current_user.store_name, is_active=True).filter(User.role != 'superadmin').order_by(User.xp_total.desc()).limit(20).all()
+        selected_store = current_user.store_name
 
-    return render_template('leaderboard.html', users=users, stores=stores, current_store=store_filter)
+    users_query = User.query.filter(
+        User.role != 'superadmin',
+        User.is_active == True
+    )
+
+    if is_global_rating:
+        if selected_store != 'all':
+            users_query = users_query.filter(User.store_name == selected_store)
+    else:
+        users_query = users_query.filter(User.store_name == current_user.store_name)
+
+    if selected_role != 'all':
+        users_query = users_query.filter(User.role == selected_role)
+
+    if selected_mode == 'lagging':
+        users = users_query.filter(User.xp_total < 100).order_by(User.xp_total.asc()).all()
+    else:
+        users = users_query.order_by(User.xp_total.desc()).all()
+
+    roles = [(role, ROLE_LABELS.get(role, role)) for role in RATING_ROLES]
+
+    return render_template(
+        'leaderboard.html',
+        users=users,
+        stores=stores,
+        roles=roles,
+        current_store=selected_store,
+        selected_store=selected_store,
+        selected_role=selected_role,
+        selected_mode=selected_mode,
+        show_all_stores=is_global_rating,
+    )
 
 
 @main_bp.route('/notifications/read', methods=['POST'])

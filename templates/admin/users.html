@@ -36,7 +36,19 @@
                 </div>
               </div>
             </td>
-            <td class="py-3 d-none d-md-table-cell"><small>{{ role_labels.get(u.role, u.role) }}</small></td>
+            <td class="py-3 d-none d-md-table-cell">
+              {% if u.role == 'superadmin' %}
+              <span class="badge bg-danger">SUPERADMIN</span>
+              {% elif u.role == 'hr' %}
+              <span class="badge bg-warning">HR</span>
+              {% elif u.role in ('director', 'director_retail') %}
+              <span class="badge bg-primary">DIRECTOR</span>
+              {% elif u.role == 'seller' %}
+              <span class="badge bg-success">SELLER</span>
+              {% else %}
+              <small>{{ role_labels.get(u.role, u.role) }}</small>
+              {% endif %}
+            </td>
             <td class="py-3 d-none d-md-table-cell"><small>{{ u.store_name }}</small></td>
             <td class="py-3">
               <span class="badge level-badge-{{ u.level }} mb-1">{{ u.level_label }}</span><br>

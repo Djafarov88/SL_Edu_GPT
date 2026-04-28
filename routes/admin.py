@@ -156,6 +156,10 @@ def delete_user(user_id):
         flash('Нельзя удалить самого себя', 'danger')
         return redirect(url_for('admin.users'))
 
+    if user.role in ('superadmin', 'hr'):
+        flash('Нельзя удалить ключевую роль', 'danger')
+        return redirect(url_for('admin.users'))
+
     if not can_delete_user(user):
         flash('Нет прав для удаления этого пользователя', 'danger')
         logger.warning(
